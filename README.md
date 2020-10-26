@@ -1,3 +1,8 @@
 # CourseProject
 
-Please fork this repository and paste the github link of your fork on Microsoft CMT. Detailed instructions are on Coursera under Week 1: Course Project Overview/Week 9 Activities.
+## Project Topic
+Reproduce A Paper: A cross-collection mixture model for comparative text mining
+
+## Team members
+Xi Luo (xiluo4)
+Yuheng Zhang (yuhengz2)
