@@ -9,10 +9,10 @@ def normalize_row(input_matrix):
     """
 
     row_sums = input_matrix.sum(axis=1)
-    print("input:", input_matrix)
-    print("row sum:", row_sums)
+    # print("input:", input_matrix)
+    # print("row sum:", row_sums)
     row_sums = np.nan_to_num(input_matrix).sum(axis=1)
-    print("row sum:", row_sums)
+    # print("row sum:", row_sums)
     try:
         assert ((np.isscalar(row_sums) and row_sums != 0) or (not np.isscalar(row_sums) and np.count_nonzero(row_sums) == np.shape(row_sums)[0]))  # no row should sum to zero
     except Exception:
@@ -136,7 +136,7 @@ class Corpus(object):
 
         self.topic_word_prob_background = np.array(self.topic_word_prob_background)
         self.topic_word_prob_background = normalize_col(np.transpose(self.topic_word_prob_background))
-        print(self.topic_word_prob_background)
+        # print(self.topic_word_prob_background)
 
 
 
@@ -162,7 +162,7 @@ class Corpus(object):
             prob = np.random.random_sample((number_of_topics, len(self.vocabulary)))
             prob = normalize_row(prob)
             self.topic_word_prob_collection_specific.append(prob)
-        print(len(self.topic_word_prob_collection_specific))
+        # print(len(self.topic_word_prob_collection_specific))
 
 
     def initialize(self, number_of_topics, random=False):
@@ -298,6 +298,10 @@ def main():
     max_iterations = 50
     epsilon = 0.00001
     corpus.plsa(number_of_topics, max_iterations, epsilon)
+    print("topic word prob")
+    print(corpus.topic_word_prob)
+    print("topic word prob")
+    print(corpus.topic_word_prob)
 
 
 if __name__ == '__main__':
