@@ -21,8 +21,8 @@ def tokens_lowercase(doc):
 	return tokens
 
 
-file_dir = "./Afghanistan_dataset"
-fout = open("Afghanistan.txt", "w")
+file_dir = "./data/Afghanistan_dataset"
+fout = open("./data/Afghanistan.txt", "w")
 file_list = os.listdir(file_dir)
 
 doc = metapy.index.Document()
