@@ -22,18 +22,26 @@ def tokens_lowercase(doc):
 
 
 file_dir = "./data/Afghanistan_dataset"
-fout = open("./data/Afghanistan.txt", "w")
+fout = open("./data/war_dataset.txt", "w")
 file_list = os.listdir(file_dir)
 
 doc = metapy.index.Document()
 for file in file_list:
 	fread = open(os.path.join(file_dir, file), "r", encoding='windows-1252').readlines()
-	content = ''
+	content = '0 '
 	for line in fread:
 		content += line.strip() + ' '
-	doc.content(content)
-	tokens = tokens_lowercase(doc)
-	out_str = ''
-	for token in tokens:
-		out_str += token + ' '
-	fout.write(out_str +'\n')
+	
+	fout.write(content +'\n')
+
+file_dir = "./data/Iraq_dataset"
+file_list = os.listdir(file_dir)
+
+doc = metapy.index.Document()
+for file in file_list:
+	fread = open(os.path.join(file_dir, file), "r", encoding='windows-1252').readlines()
+	content = '1 '
+	for line in fread:
+		content += line.strip() + ' '
+	
+	fout.write(content +'\n')

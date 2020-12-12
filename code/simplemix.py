@@ -1,4 +1,5 @@
 import numpy as np
+import metapy
 import math
 
 
@@ -41,6 +42,16 @@ class Corpus(object):
         self.number_of_documents = 0
         self.vocabulary_size = 0
 
+    def build_topic_word_prob_background(self):
+        self.background_word_prob = np.zeros(self.vocabulary_size)
+        for j in range(self.vocabulary_size):
+            for i in range(self.number_of_documents):
+                self.background_word_prob[j] += self.term_doc_matrix[i][j]
+
+        
+        self.background_word_prob = normalize(self.background_word_prob)
+        # print(self.topic_word_prob_background)
+
     def build_corpus(self):
         """
         Read document, fill in self.documents, a list of list of word
@@ -51,16 +62,19 @@ class Corpus(object):
         # #############################
         # your code here
         # #############################
+        doc = metapy.index.Document()
+        tok = metapy.analyzers.ICUTokenizer(suppress_tags=True)
+        tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
+        tok = metapy.analyzers.Porter2Filter(tok)
 
-        f = open(self.documents_path, "r").readlines()
-        for line in f:
-            items = line.strip().split()
-            words = []
-            for e in items:
-                if e in ["0", "1"]:
-                    continue
-                words.append(e)
-            self.documents.append(words)
+        with open(self.documents_path) as file:
+            for num, line in enumerate(file):
+                l = line.strip()
+                c = int(l[0])
+                l = l[2:]
+                doc.content(l)
+                tok.set_content(doc.content())
+                self.documents.append([token for token in tok])
         self.n = len(self.documents)
         self.number_of_documents = self.n
         
@@ -115,10 +129,6 @@ class Corpus(object):
         self.topic_word_prob = np.random.random_sample((self.n, self.m))
         self.topic_word_prob = normalize(self.topic_word_prob)
 
-        self.background_word_prob = np.random.random_sample((self.m))
-        self.background_word_prob = normalize(self.background_word_prob)
-
-        
     def initialize_uniformly(self, number_of_topics):
         """
         Initializes the matrices: self.document_topic_prob and self.topic_word_prob with a uniform 
@@ -133,9 +143,6 @@ class Corpus(object):
         self.topic_word_prob = np.ones((number_of_topics, len(self.vocabulary)))
         self.topic_word_prob = normalize(self.topic_word_prob)
 
-        self.background_word_prob = np.ones((self.m))
-        self.background_word_prob = normalize(self.background_word_prob)
-
     def initialize(self, number_of_topics, random=False):
         """ Call the functions to initialize the matrices document_topic_prob and topic_word_prob
         """
@@ -146,10 +153,14 @@ class Corpus(object):
         else:
             self.initialize_uniformly(number_of_topics)
 
-    def expectation_step(self):
+        self.build_topic_word_prob_background()
+
+
+    def expectation_step(self, verbose=True):
         """ The E-step updates P(z | w, d)
         """
-        print("E step:")
+        if verbose:
+            print("E step:")
         for i in range(self.n):
             for j in range(self.m):
                 fm = 0.0
@@ -168,10 +179,11 @@ class Corpus(object):
                     self.background_prob[i, j] = self.lambda_b * back_prob / back_fm
    
 
-    def maximization_step(self, number_of_topics):
+    def maximization_step(self, number_of_topics, verbose=True):
         """ The M-step updates P(w | z)
         """
-        print("M step:")
+        if verbose:
+            print("M step:")
         
         # update P(w | z)
         
@@ -221,12 +233,13 @@ class Corpus(object):
         self.likelihoods.append(loglikelihood)
         
 
-    def smm(self, number_of_topics, max_iter, epsilon):
+    def smm(self, number_of_topics, max_iter, epsilon, verbose=True):
 
         """
         Model topics.
         """
-        print ("EM iteration begins...")
+        if verbose:
+            print ("EM iteration begins...")
         
         # build term-doc matrix
         self.build_term_doc_matrix()
@@ -245,11 +258,14 @@ class Corpus(object):
         current_likelihood = 0.0
 
         for iteration in range(max_iter):
-            print("Iteration #" + str(iteration + 1) + "...")
-            self.expectation_step()
-            self.maximization_step(number_of_topics)
+            if verbose:
+                print("Iteration #" + str(iteration + 1) + "...")
+            self.expectation_step(verbose)
+            self.maximization_step(number_of_topics, verbose)
             self.calculate_likelihood(number_of_topics)
-            print("Iter:{}\tLikelihood:{:.2f}".format(iteration, self.likelihoods[iteration]))
+            
+            if verbose:
+                print("Iter:{}\tLikelihood:{:.2f}".format(iteration, self.likelihoods[iteration]))
             
 
 
@@ -265,17 +281,11 @@ def main():
 
 
     
-    number_of_topics = 2
+    number_of_topics = 5
     max_iterations = 50
     epsilon = 0.001
-    corpus.smm(number_of_topics, max_iterations, epsilon)
-    '''
-    topics = np.argmax(corpus.document_topic_prob, axis=1)
-    for i in range(corpus.n):
-        if i >= 20:
-            break
-        print(topics[i])
-    '''
+    corpus.smm(number_of_topics, max_iterations, epsilon, verbose=True)
+    
 
 
 if __name__ == '__main__':
