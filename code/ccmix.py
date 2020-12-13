@@ -11,12 +11,11 @@ def normalize_row(input_matrix):
 
     # print("input:", input_matrix)
     # print("row sum:", row_sums)
-
     row_sums = np.nan_to_num(input_matrix).sum(axis=1, keepdims=True)
     # print("row sum:", row_sums)
 
     #new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
-    new_matrix = np.divide(input_matrix, row_sums, out=np.zeros_like(input_matrix), where=row_sums != 0)
+    new_matrix = np.divide(input_matrix, row_sums)
     return np.nan_to_num(new_matrix)
 
 def normalize_col(input_matrix):
@@ -27,7 +26,7 @@ def normalize_col(input_matrix):
     col_sums = np.nan_to_num(input_matrix).sum(axis=0, keepdims=True)
 
     #new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
-    new_matrix = np.divide(input_matrix, col_sums, out=np.zeros_like(input_matrix), where=col_sums != 0)
+    new_matrix = np.divide(input_matrix, col_sums)
     return np.nan_to_num(new_matrix)
 
 
@@ -159,15 +158,15 @@ class Corpus(object):
         for k in range(self.number_of_collections):
             for i in range(self.number_of_documents):
                 tp_j = np.multiply(np.transpose([self.document_topic_prob[k][i]]), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
-                a = np.asmatrix(np.multiply(self.lambda_B, self.topic_word_prob_background))
-                b = np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.nan_to_num(tp_j).sum(axis=0, keepdims=True))
-                tp_b = np.divide(a, b, out=np.zeros_like(a), where=b != 0)
+                a = np.multiply(self.lambda_B, self.topic_word_prob_background)
+                b = a + np.multiply(1 - self.lambda_B, tp_j.sum(axis=0, keepdims=True))
+                tp_b = np.nan_to_num(np.divide(a, b))
                 tp_j = normalize_col(tp_j)
                 self.topic_prob_j[k][i] = np.transpose(tp_j)
                 self.topic_prob_B[k][i] = np.transpose(tp_b)
                 a = np.multiply(self.lambda_C, self.topic_word_prob)
-                b = np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])
-                tp_c = np.divide(a, b, out=np.zeros_like(a), where=b != 0)
+                b = a + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])
+                tp_c = np.nan_to_num(np.divide(a, b))
                 self.topic_prob_C[k][i] = np.transpose(tp_c)
         #print("p(z):")
         #print(self.topic_prob_j[k][i])
@@ -214,6 +213,14 @@ class Corpus(object):
 
         likelihood = 0
         for k in range(self.number_of_collections):
+            test = np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])))
+            with open('test.txt', 'w') as file:
+                for i in test:
+                    for j in i:
+                        file.write(str(j) + ' ')
+                file.write('\n')
+                file.write('\n')
+                file.write('\n')
             likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))))).sum()
         self.likelihoods.append(likelihood)
         return self.likelihoods[-1]
