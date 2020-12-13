@@ -1,0 +1,213 @@
+ccmix.py:221: RuntimeWarning: divide by zero encountered in log
+  likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))))).sum()
+ccmix.py:221: RuntimeWarning: invalid value encountered in multiply
+  likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))))).sum()
+ccmix.py:170: RuntimeWarning: invalid value encountered in true_divide
+  tp_b = np.divide(np.multiply(self.lambda_B, self.topic_word_prob_background), np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.nan_to_num(tp_j).sum(axis=0, keepdims=True)))
+ccmix.py:174: RuntimeWarning: divide by zero encountered in true_divide
+  tp_c = np.divide(np.multiply(self.lambda_C, self.topic_word_prob), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
+ccmix.py:174: RuntimeWarning: invalid value encountered in true_divide
+  tp_c = np.divide(np.multiply(self.lambda_C, self.topic_word_prob), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
+Vocabulary size:4552
+EM iteration begins...
+Initializing...
+Iteration #1...
+E step:
+M step:
+Likelihood:nan
+Iteration #2...
+E step:
+M step:
+Likelihood:nan
+Iteration #3...
+E step:
+M step:
+Likelihood:nan
+Iteration #4...
+E step:
+M step:
+Likelihood:nan
+Iteration #5...
+E step:
+M step:
+Likelihood:nan
+Iteration #6...
+E step:
+M step:
+Likelihood:nan
+Iteration #7...
+E step:
+M step:
+Likelihood:nan
+Iteration #8...
+E step:
+M step:
+Likelihood:nan
+Iteration #9...
+E step:
+M step:
+Likelihood:nan
+Iteration #10...
+E step:
+M step:
+Likelihood:nan
+Iteration #11...
+E step:
+M step:
+Likelihood:nan
+Iteration #12...
+E step:
+M step:
+Likelihood:nan
+Iteration #13...
+E step:
+M step:
+Likelihood:nan
+Iteration #14...
+E step:
+M step:
+Likelihood:nan
+Iteration #15...
+E step:
+M step:
+Likelihood:nan
+Iteration #16...
+E step:
+M step:
+Likelihood:nan
+Iteration #17...
+E step:
+M step:
+Likelihood:nan
+Iteration #18...
+E step:
+M step:
+Likelihood:nan
+Iteration #19...
+E step:
+M step:
+Likelihood:nan
+Iteration #20...
+E step:
+M step:
+Likelihood:nan
+Iteration #21...
+E step:
+M step:
+Likelihood:nan
+Iteration #22...
+E step:
+M step:
+Likelihood:nan
+Iteration #23...
+E step:
+M step:
+Likelihood:nan
+Iteration #24...
+E step:
+M step:
+Likelihood:nan
+Iteration #25...
+E step:
+M step:
+Likelihood:nan
+Iteration #26...
+E step:
+M step:
+Likelihood:nan
+Iteration #27...
+E step:
+M step:
+Likelihood:nan
+Iteration #28...
+E step:
+M step:
+Likelihood:nan
+Iteration #29...
+E step:
+M step:
+Likelihood:nan
+Iteration #30...
+E step:
+M step:
+Likelihood:nan
+Iteration #31...
+E step:
+M step:
+Likelihood:nan
+Iteration #32...
+E step:
+M step:
+Likelihood:nan
+Iteration #33...
+E step:
+M step:
+Likelihood:nan
+Iteration #34...
+E step:
+M step:
+Likelihood:nan
+Iteration #35...
+E step:
+M step:
+Likelihood:nan
+Iteration #36...
+E step:
+M step:
+Likelihood:nan
+Iteration #37...
+E step:
+M step:
+Likelihood:nan
+Iteration #38...
+E step:
+M step:
+Likelihood:nan
+Iteration #39...
+E step:
+M step:
+Likelihood:nan
+Iteration #40...
+E step:
+M step:
+Likelihood:nan
+Iteration #41...
+E step:
+M step:
+Likelihood:nan
+Iteration #42...
+E step:
+M step:
+Likelihood:nan
+Iteration #43...
+E step:
+M step:
+Likelihood:nan
+Iteration #44...
+E step:
+M step:
+Likelihood:nan
+Iteration #45...
+E step:
+M step:
+Likelihood:nan
+Iteration #46...
+E step:
+M step:
+Likelihood:nan
+Iteration #47...
+E step:
+M step:
+Likelihood:nan
+Iteration #48...
+E step:
+M step:
+Likelihood:nan
+Iteration #49...
+E step:
+M step:
+Likelihood:nan
+Iteration #50...
+E step:
+M step:
+Likelihood:nan

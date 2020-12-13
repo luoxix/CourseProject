@@ -11,21 +11,13 @@ def normalize_row(input_matrix):
 
     # print("input:", input_matrix)
     # print("row sum:", row_sums)
-    n = input_matrix.shape[0]
-    row_sum = np.sum(input_matrix, axis=1)
-    for i in range(n):
-        if row_sum[i] > 0:
-            input_matrix[i, :] /= row_sum[i]
 
-    '''
     row_sums = np.nan_to_num(input_matrix).sum(axis=1, keepdims=True)
     # print("row sum:", row_sums)
 
     #new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
     new_matrix = np.divide(input_matrix, row_sums, out=np.zeros_like(input_matrix), where=row_sums != 0)
     return np.nan_to_num(new_matrix)
-    '''
-    return input_matrix
 
 def normalize_col(input_matrix):
     """
