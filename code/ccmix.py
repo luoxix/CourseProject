@@ -261,7 +261,6 @@ class Corpus(object):
             if verbose:
                 print("Likelihood:{}".format(next_likelihood))
             if iteration != 0 and next_likelihood - current_likelihood < epsilon:
-                print(abs(next_likelihood - current_likelihood))
                 break
             current_likelihood = next_likelihood
             #input("Press Enter to continue...")
