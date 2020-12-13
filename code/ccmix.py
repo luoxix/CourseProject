@@ -1,6 +1,7 @@
 import metapy
 import numpy as np
 import math
+import argparse
 
 
 def normalize_row(input_matrix):
@@ -10,12 +11,21 @@ def normalize_row(input_matrix):
 
     # print("input:", input_matrix)
     # print("row sum:", row_sums)
+    n = input_matrix.shape[0]
+    row_sum = np.sum(input_matrix, axis=1)
+    for i in range(n):
+        if row_sum[i] > 0:
+            input_matrix[i, :] /= row_sum[i]
+
+    '''
     row_sums = np.nan_to_num(input_matrix).sum(axis=1, keepdims=True)
     # print("row sum:", row_sums)
 
     #new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
     new_matrix = np.divide(input_matrix, row_sums, out=np.zeros_like(input_matrix), where=row_sums != 0)
     return np.nan_to_num(new_matrix)
+    '''
+    return input_matrix
 
 def normalize_col(input_matrix):
     """
@@ -34,7 +44,7 @@ class Corpus(object):
     A collection of documents.
     """
 
-    def __init__(self, documents_path):
+    def __init__(self, documents_path, lambda_b, lambda_c):
         """
         Initialize empty document list.
         """
@@ -50,8 +60,8 @@ class Corpus(object):
         self.topic_prob_j = None  # P(z | d, w)
         self.topic_prob_B = None  # P(z | d, w)
         self.topic_prob_C = None  # P(z | d, w)
-        self.lambda_B = 0.95
-        self.lambda_C = 0.25
+        self.lambda_B = lambda_b
+        self.lambda_C = lambda_c
 
         self.number_of_collections = 0
         self.number_of_documents = 0
@@ -146,10 +156,11 @@ class Corpus(object):
         #print("pi", self.document_topic_prob)
         #print("p(w|theta)", self.topic_word_prob)
 
-    def expectation_step(self, number_of_topics):
+    def expectation_step(self, number_of_topics, verbose):
         """ The E-step updates P(z | w, d)
         """
-        print("E step:")
+        if verbose:
+            print("E step:")
 
         # ############################
 
@@ -165,10 +176,11 @@ class Corpus(object):
         #print("p(z):")
         #print(self.topic_prob_j[k][i])
 
-    def maximization_step(self, number_of_topics):
+    def maximization_step(self, number_of_topics, verbose):
         """ The M-step updates P(w | z)
         """
-        print("M step:")
+        if verbose:
+            print("M step:")
 
         self.topic_word_prob = np.zeros((number_of_topics, len(self.vocabulary)))
         self.topic_word_prob_collection_specific = []
@@ -197,10 +209,10 @@ class Corpus(object):
 
         self.topic_word_prob = normalize_row(self.topic_word_prob)
 
-        print("pi:")
-        print(self.document_topic_prob)
-        print("p(w|theta):")
-        print(self.topic_word_prob)
+        #print("pi:")
+        #print(self.document_topic_prob)
+        #print("p(w|theta):")
+        #print(self.topic_word_prob)
 
     def calculate_likelihood(self):
 
@@ -210,12 +222,13 @@ class Corpus(object):
         self.likelihoods.append(likelihood)
         return self.likelihoods[-1]
 
-    def plsa(self, number_of_topics, max_iter, epsilon):
+    def plsa(self, number_of_topics, max_iter, epsilon, verbose=True):
 
         """
         Model topics.
         """
-        print("EM iteration begins...")
+        if verbose:
+            print("EM iteration begins...")
 
         # build term-doc matrix
         self.build_term_doc_matrix()
@@ -234,50 +247,64 @@ class Corpus(object):
         current_likelihood = 0.0
 
         for iteration in range(max_iter):
-            print("Iteration #" + str(iteration + 1) + "...")
+            if verbose:
+                print("Iteration #" + str(iteration + 1) + "...")
 
             # ############################
 
-            self.expectation_step(number_of_topics)
-            self.maximization_step(number_of_topics)
+            self.expectation_step(number_of_topics, verbose)
+            self.maximization_step(number_of_topics, verbose)
             next_likelihood = self.calculate_likelihood()
+            if verbose:
+                print("Likelihood:{}".format(next_likelihood))
             if abs(next_likelihood - current_likelihood) < epsilon:
                 print(abs(next_likelihood - current_likelihood))
                 break
             current_likelihood = next_likelihood
             #input("Press Enter to continue...")
 
-        print(self.document_topic_prob)
+        #print(self.document_topic_prob)
 
 
 def main():
-    #documents_path = 'data/laptop_reviews.txt'
-    documents_path = 'data/war.txt'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_path", type=str, default='./data/laptop_reviews.txt')
+    parser.add_argument("--output_common_path", type=str, default='./result/common_laptop.txt')
+    parser.add_argument("--output_specific_path", type=str, default='./result/specific_laptop.txt')
+    parser.add_argument("--lambda_b", type=float, default=0.95)
+    parser.add_argument("--lambda_c", type=float, default=0.25)
+    parser.add_argument("--max_iterations", type=int, default=50)
+    parser.add_argument("--number_topics", type=int, default=5)
+    parser.add_argument("--number_top_words", type=int, default=8)
+    parser.add_argument("--verbose", type=bool, default=True)
+    args = parser.parse_args()
+    documents_path = args.input_path
 
-    corpus = Corpus(documents_path)  # instantiate corpus
+    corpus = Corpus(documents_path, args.lambda_b, args.lambda_c)  # instantiate corpus
     corpus.build_corpus()
     corpus.build_vocabulary()
     # print(corpus.vocabulary)
-    print("Vocabulary size:" + str(len(corpus.vocabulary)))
-    number_of_topics = 5
-    max_iterations = 50
+    if args.verbose:
+        print("Vocabulary size:" + str(len(corpus.vocabulary)))
+    number_of_topics = args.number_topics
+    max_iterations = args.max_iterations
     epsilon = 0.00001
-    corpus.plsa(number_of_topics, max_iterations, epsilon)
+    corpus.plsa(number_of_topics, max_iterations, epsilon, args.verbose)
     # print("topic word prob")
-    print(corpus.topic_word_prob[0])
+    #print(corpus.topic_word_prob[0])
 
-    with open('common.txt', 'a') as file:
+    with open(args.output_common_path, 'w') as file:
         for cluster in corpus.topic_word_prob:
-            ind = np.argsort(-cluster)[:8]
+            ind = np.argsort(-cluster)[:args.number_top_words]
             for i in ind:
                 file.write(str(corpus.vocabulary[i]) + ' ' + str(cluster[i]) + '\n')
             file.write('\n')
         file.close()
-    with open('collections.txt', 'a') as file:
+    with open(args.output_specific_path, 'w') as file:
         for collection in range(corpus.number_of_collections):
             file.write('collection ' + str(collection) + '\n')
             for cluster in corpus.topic_word_prob_collection_specific[collection]:
-                ind = np.argsort(-cluster)[:5]
+                ind = np.argsort(-cluster)[:args.number_top_words]
                 for i in ind:
                     file.write(str(corpus.vocabulary[i]) + ' ' + str(cluster[i]) + '\n')
                 file.write('\n')
