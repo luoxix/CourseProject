@@ -67,6 +67,7 @@ class Corpus(object):
         tok = metapy.analyzers.ICUTokenizer(suppress_tags=True)
         tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
         tok = metapy.analyzers.Porter2Filter(tok)
+        tok = metapy.analyzers.LengthFilter(tok, min=2, max=10000)
 
         with open(self.documents_path) as file:
             for num, line in enumerate(file):
@@ -208,7 +209,7 @@ class Corpus(object):
             for l in range(self.k):
                 self.document_topic_prob[i, l] = 0.0
                 for j in range(self.m):
-                    self.document_topic_prob[i, l] += self.term_doc_matrix[i, j] * self.topic_prob[i, j, l]
+                    self.document_topic_prob[i, l] += self.term_doc_matrix[i, j] * self.topic_prob[i, j, l] * (1 - self.background_prob[i, j])
         
         self.document_topic_prob = normalize(self.document_topic_prob)
                     
@@ -279,6 +280,11 @@ class Corpus(object):
             self.expectation_step(verbose)
             self.maximization_step(number_of_topics, verbose)
             self.calculate_likelihood(number_of_topics)
+
+            if iteration > 0:
+                if abs(self.likelihoods[iteration] - self.likelihoods[iteration-1]) < epsilon:
+                    print("Optimization Converge")
+                    break
             
             if verbose:
                 print("Iter:{}\tLikelihood:{:.2f}".format(iteration+1, self.likelihoods[iteration]))
@@ -288,8 +294,8 @@ class Corpus(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", type=str, default='./data/war_dataset.txt')
-    parser.add_argument("--output_path", type=str, default='./result_simple_war.txt')
+    parser.add_argument("--input_path", type=str, default='./data/laptop_reviews.txt')
+    parser.add_argument("--output_path", type=str, default='./result_simple_laptop.txt')
     parser.add_argument("--lambda_b", type=float, default=0.95)
     parser.add_argument("--max_iterations", type=int, default=50)
     parser.add_argument("--number_topics", type=int, default=5)
