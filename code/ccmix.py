@@ -71,8 +71,8 @@ class Corpus(object):
         tok = metapy.analyzers.ICUTokenizer(suppress_tags=True)
         tok = metapy.analyzers.LowercaseFilter(tok)
         tok = metapy.analyzers.LengthFilter(tok, min=3, max=1000)
-        tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
         tok = metapy.analyzers.Porter2Filter(tok)
+        tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
         collection = -1
 
         with open(self.documents_path) as file:
@@ -221,7 +221,7 @@ class Corpus(object):
                 file.write('\n')
                 file.write('\n')
                 file.write('\n')
-            likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))))).sum()
+            likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.nan_to_num(np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])))))).sum()
         self.likelihoods.append(likelihood)
         return self.likelihoods[-1]
 
@@ -239,9 +239,9 @@ class Corpus(object):
         # Create the counter arrays.
 
         # P(z | d, w)
-        self.topic_prob_j = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.float)
-        self.topic_prob_B = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, 1], dtype=np.float)
-        self.topic_prob_C = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.float)
+        self.topic_prob_j = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.longdouble)
+        self.topic_prob_B = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, 1], dtype=np.longdouble)
+        self.topic_prob_C = np.zeros([self.number_of_collections, self.number_of_documents, self.vocabulary_size, number_of_topics], dtype=np.longdouble)
 
         # P(z | d) P(w | z)
         self.initialize(number_of_topics, random=True)
@@ -260,7 +260,7 @@ class Corpus(object):
             next_likelihood = self.calculate_likelihood()
             if verbose:
                 print("Likelihood:{}".format(next_likelihood))
-            if abs(next_likelihood - current_likelihood) < epsilon:
+            if iteration != 0 and next_likelihood - current_likelihood < epsilon:
                 print(abs(next_likelihood - current_likelihood))
                 break
             current_likelihood = next_likelihood
