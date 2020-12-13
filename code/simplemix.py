@@ -65,9 +65,10 @@ class Corpus(object):
         # #############################
         doc = metapy.index.Document()
         tok = metapy.analyzers.ICUTokenizer(suppress_tags=True)
+        tok = metapy.analyzers.LowercaseFilter(tok)
+        tok = metapy.analyzers.LengthFilter(tok, min=3, max=1000)
         tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
         tok = metapy.analyzers.Porter2Filter(tok)
-        tok = metapy.analyzers.LengthFilter(tok, min=2, max=10000)
 
         with open(self.documents_path) as file:
             for num, line in enumerate(file):
@@ -294,8 +295,8 @@ class Corpus(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", type=str, default='./data/laptop_reviews.txt')
-    parser.add_argument("--output_path", type=str, default='./result_simple_laptop.txt')
+    parser.add_argument("--input_path", type=str, default='./data/war_dataset.txt')
+    parser.add_argument("--output_path", type=str, default='./result/result_simple_war.txt')
     parser.add_argument("--lambda_b", type=float, default=0.95)
     parser.add_argument("--max_iterations", type=int, default=50)
     parser.add_argument("--number_topics", type=int, default=5)
