@@ -159,11 +159,15 @@ class Corpus(object):
         for k in range(self.number_of_collections):
             for i in range(self.number_of_documents):
                 tp_j = np.multiply(np.transpose([self.document_topic_prob[k][i]]), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
-                tp_b = np.divide(np.multiply(self.lambda_B, self.topic_word_prob_background), np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.nan_to_num(tp_j).sum(axis=0, keepdims=True)))
+                a = np.asmatrix(np.multiply(self.lambda_B, self.topic_word_prob_background))
+                b = np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.nan_to_num(tp_j).sum(axis=0, keepdims=True))
+                tp_b = np.divide(a, b, out=np.zeros_like(a), where=b != 0)
                 tp_j = normalize_col(tp_j)
                 self.topic_prob_j[k][i] = np.transpose(tp_j)
                 self.topic_prob_B[k][i] = np.transpose(tp_b)
-                tp_c = np.divide(np.multiply(self.lambda_C, self.topic_word_prob), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
+                a = np.multiply(self.lambda_C, self.topic_word_prob)
+                b = np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])
+                tp_c = np.divide(a, b, out=np.zeros_like(a), where=b != 0)
                 self.topic_prob_C[k][i] = np.transpose(tp_c)
         #print("p(z):")
         #print(self.topic_prob_j[k][i])
