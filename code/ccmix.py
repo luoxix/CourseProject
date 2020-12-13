@@ -218,7 +218,7 @@ class Corpus(object):
         self.likelihoods.append(likelihood)
         return self.likelihoods[-1]
 
-    def plsa(self, number_of_topics, max_iter, epsilon, verbose=True):
+    def ccmix(self, number_of_topics, max_iter, epsilon, verbose=True):
 
         """
         Model topics.
@@ -269,7 +269,7 @@ def main():
     parser.add_argument("--output_specific_path", type=str, default='./result/specific_laptop.txt')
     parser.add_argument("--lambda_b", type=float, default=0.95)
     parser.add_argument("--lambda_c", type=float, default=0.25)
-    parser.add_argument("--max_iterations", type=int, default=50)
+    parser.add_argument("--max_iterations", type=int, default=500)
     parser.add_argument("--number_topics", type=int, default=5)
     parser.add_argument("--number_top_words", type=int, default=8)
     parser.add_argument("--verbose", type=bool, default=True)
@@ -285,7 +285,7 @@ def main():
     number_of_topics = args.number_topics
     max_iterations = args.max_iterations
     epsilon = 0.00001
-    corpus.plsa(number_of_topics, max_iterations, epsilon, args.verbose)
+    corpus.ccmix(number_of_topics, max_iterations, epsilon, args.verbose)
     # print("topic word prob")
     #print(corpus.topic_word_prob[0])
 
