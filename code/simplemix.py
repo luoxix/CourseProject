@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import metapy
 import math
@@ -24,7 +25,7 @@ class Corpus(object):
     A collection of documents.
     """
 
-    def __init__(self, documents_path, lambda_b=0.95):
+    def __init__(self, documents_path, lambda_b=0):
         """
         Initialize empty document list.
         """
@@ -126,7 +127,7 @@ class Corpus(object):
         self.document_topic_prob = np.random.random_sample((self.n, self.k))
         self.document_topic_prob = normalize(self.document_topic_prob)
 
-        self.topic_word_prob = np.random.random_sample((self.n, self.m))
+        self.topic_word_prob = np.random.random_sample((self.k, self.m))
         self.topic_word_prob = normalize(self.topic_word_prob)
 
     def initialize_uniformly(self, number_of_topics):
@@ -231,7 +232,22 @@ class Corpus(object):
                 if prob > 0:
                     loglikelihood += self.term_doc_matrix[i, j] * math.log(prob)
         self.likelihoods.append(loglikelihood)
-        
+    
+    def output_result(self, output_path, number_top_words):
+        f = open(output_path, "w")
+        for i in range(self.k):
+            f.write("Topic {}\n".format(i+1))
+            words = []
+            for j in range(self.m):
+                words.append((j, self.topic_word_prob[i, j]))
+            words = sorted(words, key=lambda x:x[1], reverse=True)
+            out_str = ''
+            for j in range(number_top_words):
+                out_str += self.vocabulary[words[j][0]] + '\t' + str(words[j][1]) + '\t'
+            f.write(out_str + '\n')
+
+
+
 
     def smm(self, number_of_topics, max_iter, epsilon, verbose=True):
 
@@ -265,26 +281,35 @@ class Corpus(object):
             self.calculate_likelihood(number_of_topics)
             
             if verbose:
-                print("Iter:{}\tLikelihood:{:.2f}".format(iteration, self.likelihoods[iteration]))
+                print("Iter:{}\tLikelihood:{:.2f}".format(iteration+1, self.likelihoods[iteration]))
             
 
 
 
 def main():
-    documents_path = './data/war_dataset.txt'
-    corpus = Corpus(documents_path)  # instantiate corpus
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_path", type=str, default='./data/war_dataset.txt')
+    parser.add_argument("--output_path", type=str, default='./result_simple_war.txt')
+    parser.add_argument("--lambda_b", type=float, default=0.95)
+    parser.add_argument("--max_iterations", type=int, default=50)
+    parser.add_argument("--number_topics", type=int, default=5)
+    parser.add_argument("--number_top_words", type=int, default=8)
+    parser.add_argument("--verbose", type=bool, default=True)
+    args = parser.parse_args()
+
+    documents_path = args.input_path
+    corpus = Corpus(documents_path, args.lambda_b)  # instantiate corpus
     corpus.build_corpus()
     corpus.build_vocabulary()
-    print(corpus.vocabulary)
+    #print(corpus.vocabulary)
     print("Vocabulary size:" + str(len(corpus.vocabulary)))
     print("Number of documents:" + str(len(corpus.documents)))
 
-
-    
-    number_of_topics = 5
-    max_iterations = 50
-    epsilon = 0.001
-    corpus.smm(number_of_topics, max_iterations, epsilon, verbose=True)
+    number_of_topics = args.number_topics
+    max_iterations = args.max_iterations
+    epsilon = 0.00001
+    corpus.smm(number_of_topics, max_iterations, epsilon, args.verbose)
+    corpus.output_result(args.output_path, args.number_top_words)
     
 
 
