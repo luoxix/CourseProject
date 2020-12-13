@@ -8,7 +8,6 @@ def normalize_row(input_matrix):
     Normalizes the rows of a 2d input_matrix so they sum to 1
     """
 
-    row_sums = input_matrix.sum(axis=1)
     # print("input:", input_matrix)
     # print("row sum:", row_sums)
     row_sums = np.nan_to_num(input_matrix).sum(axis=1)
@@ -16,6 +15,7 @@ def normalize_row(input_matrix):
     try:
         assert ((np.isscalar(row_sums) and row_sums != 0) or (not np.isscalar(row_sums) and np.count_nonzero(row_sums) == np.shape(row_sums)[0]))  # no row should sum to zero
     except Exception:
+        print (input_matrix)
         raise Exception("Error while normalizing. Row(s) sum to zero")
     new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
     return np.nan_to_num(new_matrix)
@@ -25,12 +25,12 @@ def normalize_col(input_matrix):
     Normalizes the rows of a 2d input_matrix so they sum to 1
     """
 
-    col_sums = input_matrix.sum(axis=0)
     col_sums = np.nan_to_num(input_matrix).sum(axis=0)
 
     try:
         assert ((np.isscalar(col_sums) and col_sums != 0) or (not np.isscalar(col_sums) and np.count_nonzero(col_sums) == np.shape(col_sums)[0]))  # no row should sum to zero
     except Exception:
+        print (input_matrix)
         raise Exception("Error while normalizing. Col(s) sum to zero")
     new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
     return np.nan_to_num(new_matrix)
@@ -45,7 +45,7 @@ class Corpus(object):
         """
         Initialize empty document list.
         """
-        self.documents = [[],[],[]]
+        self.documents = []
         self.vocabulary = []
         self.likelihoods = []
         self.documents_path = documents_path
@@ -57,7 +57,7 @@ class Corpus(object):
         self.topic_prob_j = None  # P(z | d, w)
         self.topic_prob_B = None  # P(z | d, w)
         self.topic_prob_C = None  # P(z | d, w)
-        self.lambda_B = 0.9
+        self.lambda_B = 0.95
         self.lambda_C = 0.25
 
         self.number_of_collections = 0
@@ -75,8 +75,11 @@ class Corpus(object):
 
         doc = metapy.index.Document()
         tok = metapy.analyzers.ICUTokenizer(suppress_tags=True)
+        tok = metapy.analyzers.LowercaseFilter(tok)
+        tok = metapy.analyzers.LengthFilter(tok, min=3, max=1000)
         tok = metapy.analyzers.ListFilter(tok, "lemur-stopwords.txt", metapy.analyzers.ListFilter.Type.Reject)
         tok = metapy.analyzers.Porter2Filter(tok)
+        collection = -1
 
         with open(self.documents_path) as file:
             for num, line in enumerate(file):
@@ -85,6 +88,9 @@ class Corpus(object):
                 l = l[2:]
                 doc.content(l)
                 tok.set_content(doc.content())
+                if c != collection:
+                    self.documents.append([])
+                    collection = c
                 self.documents[c].append([token for token in tok])
         self.number_of_collections = len(self.documents)
         self.number_of_documents = len(self.documents[0])
@@ -119,22 +125,16 @@ class Corpus(object):
         # ############################
 
         self.term_doc_matrix = np.zeros((self.number_of_collections, self.number_of_documents, self.vocabulary_size, 1))
+        self.topic_word_prob_background = np.zeros(self.vocabulary_size)
 
         for k in range(self.number_of_collections):
             for i in range(self.number_of_documents):
                 for j in range(self.vocabulary_size):
                     self.term_doc_matrix[k][i][j] = self.documents[k][i].count(self.vocabulary[j])
+                    self.topic_word_prob_background[j] += self.term_doc_matrix[k][i][j]
                 #print(self.term_doc_matrix[k][i])
         # print(self.term_doc_matrix[0][0])
-
-    def build_topic_word_prob_background(self):
-        self.topic_word_prob_background = np.zeros(self.vocabulary_size)
-        for j in range(self.vocabulary_size):
-            for k in range(self.number_of_collections):
-                for i in range(self.number_of_documents):
-                    self.topic_word_prob_background[j] += self.term_doc_matrix[k][i][j]
-
-        self.topic_word_prob_background = np.array(self.topic_word_prob_background)
+        #self.topic_word_prob_background = np.array(self.topic_word_prob_background)
         self.topic_word_prob_background = normalize_col(np.transpose(self.topic_word_prob_background))
         # print(self.topic_word_prob_background)
 
@@ -172,8 +172,8 @@ class Corpus(object):
 
         self.initialize_randomly(number_of_topics)
 
-        print("pi", self.document_topic_prob)
-        print("p(w|theta)", self.topic_word_prob)
+        #print("pi", self.document_topic_prob)
+        #print("p(w|theta)", self.topic_word_prob)
 
     def expectation_step(self, number_of_topics):
         """ The E-step updates P(z | w, d)
@@ -185,14 +185,14 @@ class Corpus(object):
         for k in range(self.number_of_collections):
             for i in range(self.number_of_documents):
                 tp_j = np.multiply(np.transpose([self.document_topic_prob[k][i]]), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
-                tp_b = np.divide(np.multiply(self.lambda_B, self.topic_word_prob_background), np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, tp_j.sum(axis=0, keepdims=True)))
+                tp_b = np.divide(np.multiply(self.lambda_B, self.topic_word_prob_background), np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.nan_to_num(tp_j).sum(axis=0, keepdims=True)))
                 tp_j = normalize_col(tp_j)
                 self.topic_prob_j[k][i] = np.transpose(tp_j)
                 self.topic_prob_B[k][i] = np.transpose(tp_b)
                 tp_c = np.divide(np.multiply(self.lambda_C, self.topic_word_prob), np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k]))
                 self.topic_prob_C[k][i] = np.transpose(tp_c)
-        print("p(z):")
-        print(self.topic_prob_j[k][i])
+        #print("p(z):")
+        #print(self.topic_prob_j[k][i])
 
     def maximization_step(self, number_of_topics):
         """ The M-step updates P(w | z)
@@ -255,7 +255,6 @@ class Corpus(object):
 
         # build term-doc matrix
         self.build_term_doc_matrix()
-        self.build_topic_word_prob_background()
 
         # Create the counter arrays.
 
@@ -288,20 +287,39 @@ class Corpus(object):
 
 
 def main():
-    documents_path = 'data/corpus.txt'
+    #documents_path = 'data/laptop_reviews.txt'
+    documents_path = 'data/war.txt'
+
     corpus = Corpus(documents_path)  # instantiate corpus
     corpus.build_corpus()
     corpus.build_vocabulary()
-    print(corpus.vocabulary)
+    # print(corpus.vocabulary)
     print("Vocabulary size:" + str(len(corpus.vocabulary)))
     number_of_topics = 5
     max_iterations = 50
     epsilon = 0.00001
     corpus.plsa(number_of_topics, max_iterations, epsilon)
-    print("topic word prob")
-    print(corpus.topic_word_prob)
-    print("topic word prob")
-    print(corpus.topic_word_prob)
+    # print("topic word prob")
+    print(corpus.topic_word_prob[0])
+
+    with open('common.txt', 'a') as file:
+        for cluster in corpus.topic_word_prob:
+            ind = np.argsort(-cluster)[:8]
+            for i in ind:
+                file.write(str(corpus.vocabulary[i]) + ' ' + str(cluster[i]) + '\n')
+            file.write('\n')
+        file.close()
+    with open('collections.txt', 'a') as file:
+        for collection in range(corpus.number_of_collections):
+            file.write('collection ' + str(collection) + '\n')
+            for cluster in corpus.topic_word_prob_collection_specific[collection]:
+                ind = np.argsort(-cluster)[:5]
+                for i in ind:
+                    file.write(str(corpus.vocabulary[i]) + ' ' + str(cluster[i]) + '\n')
+                file.write('\n')
+        file.close()
+
+
 
 
 if __name__ == '__main__':
