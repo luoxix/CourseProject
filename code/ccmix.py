@@ -10,14 +10,11 @@ def normalize_row(input_matrix):
 
     # print("input:", input_matrix)
     # print("row sum:", row_sums)
-    row_sums = np.nan_to_num(input_matrix).sum(axis=1)
+    row_sums = np.nan_to_num(input_matrix).sum(axis=1, keepdims=True)
     # print("row sum:", row_sums)
-    try:
-        assert ((np.isscalar(row_sums) and row_sums != 0) or (not np.isscalar(row_sums) and np.count_nonzero(row_sums) == np.shape(row_sums)[0]))  # no row should sum to zero
-    except Exception:
-        print (input_matrix)
-        raise Exception("Error while normalizing. Row(s) sum to zero")
-    new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
+
+    #new_matrix = input_matrix / row_sums if np.isscalar(row_sums) else input_matrix / row_sums[:, np.newaxis]
+    new_matrix = np.divide(input_matrix, row_sums, out=np.zeros_like(input_matrix), where=row_sums != 0)
     return np.nan_to_num(new_matrix)
 
 def normalize_col(input_matrix):
@@ -25,14 +22,10 @@ def normalize_col(input_matrix):
     Normalizes the rows of a 2d input_matrix so they sum to 1
     """
 
-    col_sums = np.nan_to_num(input_matrix).sum(axis=0)
+    col_sums = np.nan_to_num(input_matrix).sum(axis=0, keepdims=True)
 
-    try:
-        assert ((np.isscalar(col_sums) and col_sums != 0) or (not np.isscalar(col_sums) and np.count_nonzero(col_sums) == np.shape(col_sums)[0]))  # no row should sum to zero
-    except Exception:
-        print (input_matrix)
-        raise Exception("Error while normalizing. Col(s) sum to zero")
-    new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
+    #new_matrix =  input_matrix / col_sums if np.isscalar(col_sums) else input_matrix / col_sums[np.newaxis, :]
+    new_matrix = np.divide(input_matrix, col_sums, out=np.zeros_like(input_matrix), where=col_sums != 0)
     return np.nan_to_num(new_matrix)
 
 
@@ -99,13 +92,6 @@ class Corpus(object):
         #print(self.documents[0])
 
     def build_vocabulary(self):
-        """
-        Construct a list of unique words in the whole corpus. Put it in self.vocabulary
-        for example: ["rain", "the", ...]
-
-        Update self.vocabulary_size
-        """
-        # #############################
 
         voc = set([])
         for documents in self.documents:
@@ -116,13 +102,6 @@ class Corpus(object):
         #print(self.vocabulary)
 
     def build_term_doc_matrix(self):
-        """
-        Construct the term-document matrix where each row represents a document,
-        and each column represents a vocabulary term.
-
-        self.term_doc_matrix[i][j] is the count of term j in document i
-        """
-        # ############################
 
         self.term_doc_matrix = np.zeros((self.number_of_collections, self.number_of_documents, self.vocabulary_size, 1))
         self.topic_word_prob_background = np.zeros(self.vocabulary_size)
@@ -141,14 +120,6 @@ class Corpus(object):
 
 
     def initialize_randomly(self, number_of_topics):
-        """
-        Randomly initialize the matrices: document_topic_prob and topic_word_prob
-        which hold the probability distributions for P(z | d) and P(w | z): self.document_topic_prob, and self.topic_word_prob
-
-        Don't forget to normalize!
-        HINT: you will find numpy's random matrix useful [https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.random.html]
-        """
-        # ############################
 
         for i in range(self.number_of_collections):
             prob = np.random.random_sample((self.number_of_documents, number_of_topics))
@@ -232,13 +203,6 @@ class Corpus(object):
         print(self.topic_word_prob)
 
     def calculate_likelihood(self):
-        """ Calculate the current log-likelihood of the model using
-        the model's updated probability matrices
-
-        Append the calculated log-likelihood to self.likelihoods
-
-        """
-        # ############################
 
         likelihood = 0
         for k in range(self.number_of_collections):
