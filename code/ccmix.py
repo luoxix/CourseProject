@@ -2,7 +2,9 @@ import metapy
 import numpy as np
 import math
 import argparse
+import os
 
+os.makedirs("./result", exist_ok=True)
 
 def normalize_row(input_matrix):
     """
@@ -213,6 +215,7 @@ class Corpus(object):
 
         likelihood = 0
         for k in range(self.number_of_collections):
+            '''
             test = np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])))
             with open('test.txt', 'w') as file:
                 for i in test:
@@ -221,6 +224,7 @@ class Corpus(object):
                 file.write('\n')
                 file.write('\n')
                 file.write('\n')
+            '''
             likelihood += np.multiply(self.term_doc_matrix[k, :, :, 0], np.nan_to_num(np.log(np.multiply(self.lambda_B, self.topic_word_prob_background) + np.multiply(1 - self.lambda_B, np.dot(self.document_topic_prob[k], np.multiply(self.lambda_C, self.topic_word_prob) + np.multiply(1 - self.lambda_C, self.topic_word_prob_collection_specific[k])))))).sum()
         self.likelihoods.append(likelihood)
         return self.likelihoods[-1]
@@ -261,6 +265,7 @@ class Corpus(object):
             if verbose:
                 print("Likelihood:{}".format(next_likelihood))
             if iteration != 0 and next_likelihood - current_likelihood < epsilon:
+                print("EM algorithm converge")
                 break
             current_likelihood = next_likelihood
             #input("Press Enter to continue...")

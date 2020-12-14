@@ -2,7 +2,9 @@ import argparse
 import numpy as np
 import metapy
 import math
+import os
 
+os.makedirs("./result", exist_ok=True)
 
 def normalize(input_matrix):
     """
