@@ -20,7 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5cea1ccd-7515-43da-9694-169554fc268a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/result/common_laptop.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/result/common_laptop.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/result/specific_laptop.txt" beforeDir="false" afterPath="$PROJECT_DIR$/code/result/specific_laptop.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +52,7 @@
       <updated>1606625593217</updated>
       <workItem from="1606625594263" duration="26000" />
       <workItem from="1606630613462" duration="34572000" />
+      <workItem from="1607923844800" duration="340000" />
     </task>
     <servers />
   </component>
@@ -67,6 +69,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
     <state x="431" y="215" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1606634234868">
